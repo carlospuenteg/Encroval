@@ -4,8 +4,6 @@ from colorama import init, Fore, Back
 init(autoreset=True)
 #-----------------------------------------------------------------------------
 # https://www.geeksforgeeks.org/python-import-module-from-different-directory/
-import sys
-sys.path.insert(0, '/Users/carlospuenteg/Ficheros/PROGRAMACIÓN/Python/Encroval/mods')
 #-----------------------------------------------------------------------------
 from hash2h import h2h
 from txtHex import t2h, h2t, txtB
