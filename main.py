@@ -1,6 +1,9 @@
 import random
 import hashlib
 from colorama import init, Fore, Back; init(autoreset=True)
+from PIL import Image
+import numpy as np
+import os
 
 ############################################################################
 BASE = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
@@ -12,7 +15,7 @@ HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
 TEXT_LEN_POS = [1,2]
-ENC_LIST_LEN = 256
+ENC_LIST_LEN = 294 # 7^2 * 6
 
 ##########################################################################################################
 # Create a new hash from a hash
@@ -58,6 +61,7 @@ def h2t(hex):
 
 ##########################################################################################################
 def encrypt(txt, pwd):
+    txt = txt.lower()
     # If the text has any strange symbol or its length is more than the max, return -1
     if not all(c in BASE for c in txt) or len(txt) > MAX_LEN: return -1
 
@@ -205,6 +209,20 @@ def decrypt(txt,pwd):
     return toret
 
 ##########################################################################################################
+def encrypt_toimg(txt, pwd, img_path="img.png"):
+    enc_text = encrypt(txt, pwd)
+    img_arr = np.array([[int(enc_text[i:i+2], 16), int(enc_text[i+2:i+4], 16), int(enc_text[i+4:i+6], 16)] for i in range(0, len(enc_text), 6)], dtype=np.uint8)
+    img_arr = img_arr.reshape(7, 7, 3)
+    Image.fromarray(img_arr).save(img_path)
+    return enc_text
+
+def decrypt_img(img_path, pwd):
+    img_arr = np.array(Image.open(img_path)).flatten()
+    print(np.array(Image.open(img_path)).shape)
+    img_str = "".join([f'{n:02x}' for n in img_arr])
+    return decrypt(img_str, pwd)
+
+##########################################################################################################
 def menu():
     print("\nThis algorithm helps you encrypt a text with a maximum length of " + str(MAX_LEN) + ", written with 40 different characters and symbols")
 
@@ -212,27 +230,53 @@ def menu():
         print("  0. EXIT: ")
         print("  1. Encrypt a text")
         print("  2. Decrypt a text")
+        print("  3. Encrypt a text into an image")
+        print("  4. Decrypt an image")
         print("  s. Symbols list")
         opt = input("\nType an option: ")
 
         if opt == "0":
-            return 0
+            return
+
         elif opt == "1":
-            txt = input("Type the text to encrypt: ")
-            pwd = input("Type a password: ")
+            txt = input("Text to encrypt: ")
+            pwd = input("Password: ")
             enc_txt = encrypt(txt,pwd)
             if enc_txt != -1:
-                print("\nEncrypted text: " + Fore.GREEN+enc_txt+"\n")
+                print(f"\nEncrypted text: {Fore.GREEN}{enc_txt}\n")
             else:
                 print("\n"+Fore.RED+"Invalid text"+"\n")
+
         elif opt == "2":
-            txt = input("Type the text to decrypt: ")
-            pwd = input("Type the password: ")
+            txt = input("Text to decrypt: ")
+            pwd = input("Password: ")
             dec_txt = decrypt(txt,pwd)
             if dec_txt != -1:
-                print("\nDecrypted text: " + Fore.LIGHTCYAN_EX+dec_txt+"\n")
+                print(f"\nDecrypted text: {Fore.LIGHTCYAN_EX}{dec_txt}\n")
             else:
-                print("\n"+Fore.RED+"Invalid text"+"\n")
+                print(f"\n{Fore.RED} Invalid text\n")
+
+        elif opt == "3":
+            txt = input("Text to encrypt: ")
+            pwd = input("Password: ")
+            img_path = input("Path to the image: ")
+            img_path = img_path if img_path != "" else "img.png"
+            enc_txt = encrypt_toimg(txt,pwd,img_path)
+            if enc_txt != -1:
+                print(f"\nEncrypted text: {Fore.LIGHTCYAN_EX}{enc_txt}\n")
+                print(f"\nImage saved in {Fore.LIGHTMAGENTA_EX}{img_path}\n")
+            else:
+                print(f"\n{Fore.RED} Invalid text\n")
+
+        elif opt == "4":
+            img_path = input("Path to the image to decrypt: ")
+            pwd = input("Password: ")
+            dec_txt = decrypt_img(img_path,pwd)
+            if dec_txt != -1:
+                print(f"\nDecrypted text: {Fore.LIGHTCYAN_EX}{dec_txt}\n")
+            else:
+                print(f"\n{Fore.RED} Invalid text\n")
+
         elif opt == "s":
             baseList = ""
             for x in BASE:
