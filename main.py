@@ -8,13 +8,11 @@ import numpy as np
 BASE = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
 BASE_LEN = len(BASE)
 HEX_SYMB = "0123456789abcdef"
-MAX_LEN = 94
-TXT_MAX_LEN = 126
+ENC_LIST_LEN = 216 # 6^2 * 6
 HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
 TEXT_LEN_POS = [1,2]
-ENC_LIST_LEN = 294 # 7^2 * 6
 
 ##########################################################################################################
 # Create a new hash from a hash
@@ -62,7 +60,7 @@ def h2t(hex):
 def encrypt(txt, pwd):
     txt = txt.lower()
     # If the text has any strange symbol or its length is more than the max, return -1
-    if not all(c in BASE for c in txt) or len(txt) > MAX_LEN: return -1
+    if not all(c in BASE for c in txt) or len(txt) > ENC_LIST_LEN: return -1
 
     # Encode the password to sha512 and get the hash (length = 128)
     hash = hashlib.sha512(pwd.encode()).hexdigest()
@@ -77,14 +75,14 @@ def encrypt(txt, pwd):
     iters += ITERS_TOADD
 
     while True:
-        # Convert each pair of hex digits from the hash to an integer
-        pwd_indexes = [int(hash[i : i+2], 16) for i in range(0, len(hash), 2)]
+        # Convert each pair of hex digits from the hash to an integer (but the result has to be below ENC_LIST_LEN)
+        pwd_indexes = [min(int(hash[i : i+2], 16), ENC_LIST_LEN-1) for i in range(0, len(hash), 2)]
 
         # Remove the duplicates from the list
         pwd_indexes = list(dict.fromkeys(pwd_indexes))
 
         # If the list has more than the required length (TXT_MAX_LEN + ENC_CODE_POS + TEXT_LEN_POS), break (end the loop)
-        if len(pwd_indexes) >= (TXT_MAX_LEN + 3): 
+        if len(pwd_indexes) == ENC_LIST_LEN: 
             break
 
         # If the list doesn't have enough indexes, add other hash to the hash
@@ -160,14 +158,14 @@ def decrypt(txt,pwd):
     iters += ITERS_TOADD
 
     while True:
-        # Convert each pair of hex digits from the hash to an integer
-        pwd_indexes = [int(hash[i : i+2], 16) for i in range(0, len(hash), 2)]
+        # Convert each pair of hex digits from the hash to an integer (less than ENC_LIST_LEN)
+        pwd_indexes = [min(int(hash[i : i+2], 16), ENC_LIST_LEN-1) for i in range(0, len(hash), 2)]
 
         # Remove the duplicates from the list
         pwd_indexes = list(dict.fromkeys(pwd_indexes))
 
         # If the list has more than the required length (TXT_MAX_LEN + ENC_CODE_POS + TEXT_LEN_POS), break (end the loop)
-        if len(pwd_indexes) >= (TXT_MAX_LEN + 3): 
+        if len(pwd_indexes) == ENC_LIST_LEN: 
             break
 
         # If the list doesn't have enough indexes, add other hash to the hash
@@ -211,19 +209,19 @@ def decrypt(txt,pwd):
 def encrypt_toimg(txt, pwd, img_path="img.png"):
     enc_text = encrypt(txt, pwd)
     img_arr = np.array([[int(enc_text[i:i+2], 16), int(enc_text[i+2:i+4], 16), int(enc_text[i+4:i+6], 16)] for i in range(0, len(enc_text), 6)], dtype=np.uint8)
-    img_arr = img_arr.reshape(7, 7, 3)
+    size = int(np.sqrt(ENC_LIST_LEN/6))
+    img_arr = img_arr.reshape(size, size, 3)
     Image.fromarray(img_arr).save(img_path)
     return enc_text
 
 def decrypt_img(img_path, pwd):
     img_arr = np.array(Image.open(img_path)).flatten()
-    print(np.array(Image.open(img_path)).shape)
     img_str = "".join([f'{n:02x}' for n in img_arr])
     return decrypt(img_str, pwd)
 
 ##########################################################################################################
 def menu():
-    print("\nThis algorithm helps you encrypt a text with a maximum length of " + str(MAX_LEN) + ", written with 40 different characters and symbols")
+    print("\nThis algorithm helps you encrypt a text with a maximum length of " + str(ENC_LIST_LEN) + ", written with 40 different characters and symbols")
 
     while True:
         print("  0. EXIT: ")
