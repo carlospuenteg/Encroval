@@ -1,4 +1,4 @@
-# Encroval
+# Encroval
 
 ## Encrypt a text
 
@@ -35,7 +35,7 @@ If you run it again, you will create a different encrypted text:
 | Decrypted text | hello world
 
 
-## Decrypt an image
+## Decrypt an image
 
 |||
 |-|-|
