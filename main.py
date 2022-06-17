@@ -59,8 +59,9 @@ def h2t(hex):
 ##########################################################################################################
 def encrypt(txt, pwd):
     txt = txt.lower()
-    # If the text has any strange symbol or its length is more than the max, return -1
-    if not all(c in BASE for c in txt) or len(txt) > ENC_LIST_LEN: return -1
+
+    # If, for example, ENC_LIST_LEN = 200, then the text on hexadecimal can have a length of up to 197 (200-3)
+    if not all(c in BASE for c in txt) or len(t2h(txt)) > ENC_LIST_LEN-3 : return -1
 
     # Encode the password to sha512 and get the hash (length = 128)
     hash = hashlib.sha512(pwd.encode()).hexdigest()
@@ -142,8 +143,8 @@ def encrypt(txt, pwd):
 ##########################################################################################################
 
 def decrypt(txt,pwd):
-    # If the text has any strange symbol or its length is more than the max, return -1
-    if not all(c in BASE for c in txt) or len(txt) > ENC_LIST_LEN: return -1
+    # The symbols must all be hexadecimal and the text must have a length of ENC_LIST_LEN
+    if not all(c in HEX_SYMB for c in txt) or len(txt) != ENC_LIST_LEN : return -1
 
     # Encode the password to sha512 and get the hash (length = 128)
     hash = hashlib.sha512(pwd.encode()).hexdigest()
