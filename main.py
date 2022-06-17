@@ -3,7 +3,6 @@ import hashlib
 from colorama import init, Fore, Back; init(autoreset=True)
 from PIL import Image
 import numpy as np
-import os
 
 ############################################################################
 BASE = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
