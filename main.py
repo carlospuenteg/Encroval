@@ -7,8 +7,8 @@ import random
 import os
 
 ############################################################################
-BASE = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
-BASE_LEN = len(BASE)
+BASE_TXT = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
+BASE_TXT_LEN = len(BASE_TXT)
 HEX_SYMB = "0123456789abcdef"
 HASH_ITERS = 100
 ITERS_TOADD = 10
@@ -45,7 +45,7 @@ def t2h(txt):
     num = 0
     for x in range(0,len(txt)):
         # Convert text to decimal
-        num += ( BASE.index(txt[x]) * BASE_LEN**(len(txt)-x-1) )
+        num += ( BASE_TXT.index(txt[x]) * BASE_TXT_LEN**(len(txt)-x-1) )
 
     return format(num, 'x')
 
@@ -57,8 +57,8 @@ def h2t(hex):
 
     d = []
     while num:
-        d.append(BASE[num % BASE_LEN])
-        num //= BASE_LEN
+        d.append(BASE_TXT[num % BASE_TXT_LEN])
+        num //= BASE_TXT_LEN
 
     return "".join(d[::-1])
 
@@ -67,7 +67,7 @@ def encrypt(txt, pwd, new_filename="text-enc"):
     txt = txt.lower()
 
     # If, for example, ENC_LIST_LEN = 200, then the text on hexadecimal can have a length of up to 197 (200-3)
-    if not all(c in BASE for c in txt) or len(t2h(txt)) > ENC_LIST_LEN-1-HEX_POS_LEN : return -1
+    if not all(c in BASE_TXT for c in txt) or len(t2h(txt)) > ENC_LIST_LEN-1-HEX_POS_LEN : return -1
 
     # Encode the password to sha512 and get the hash (length = 128)
     hash = hashlib.sha512(pwd.encode()).hexdigest()
@@ -261,7 +261,7 @@ def menu():
 
         elif opt == "s":
             baseList = ""
-            for x in BASE:
+            for x in BASE_TXT:
                 baseList += Back.BLUE+" "+x+" "
                 baseList += Back.RESET+" "
             print("\n"+baseList+"\n")
