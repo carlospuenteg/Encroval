@@ -4,6 +4,7 @@ from colorama import init, Fore, Back; init(autoreset=True)
 from PIL import Image
 import numpy as np
 import random
+import os
 
 ############################################################################
 BASE = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
@@ -12,10 +13,12 @@ HEX_SYMB = "0123456789abcdef"
 HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
-HEX_POS_LEN = 6
+HEX_POS_LEN = 5
 IMG_SIZE = int(np.sqrt((16**HEX_POS_LEN)//6))
 ENC_LIST_LEN = (IMG_SIZE**2)*6
 TEXT_LEN_POS = range(1, HEX_POS_LEN+1)
+INPUT_FOLDER = "input"
+OUTPUT_FOLDER = "output"
 ##########################################################################################################
 # Create a new hash from a hash
 def h2h(hash, iters):
@@ -41,6 +44,7 @@ def dec(txt,encryption):
 def t2h(txt):
     num = 0
     for x in range(0,len(txt)):
+        # Convert text to decimal
         num += ( BASE.index(txt[x]) * BASE_LEN**(len(txt)-x-1) )
 
     return format(num, 'x')
@@ -59,7 +63,7 @@ def h2t(hex):
     return "".join(d[::-1])
 
 ##########################################################################################################
-def encrypt(txt, pwd):
+def encrypt(txt, pwd, new_filename="text-enc"):
     txt = txt.lower()
 
     # If, for example, ENC_LIST_LEN = 200, then the text on hexadecimal can have a length of up to 197 (200-3)
@@ -123,7 +127,8 @@ def encrypt(txt, pwd):
     toret = "".join(toret)
 
     # If the text can be decrypted with the same password, return the result.
-    if (decrypt(toret, pwd) == txt):
+    if (decrypt(toret, pwd, None) == txt):
+        open(f"{OUTPUT_FOLDER}/{new_filename}.txt", "w").write(toret)
         return toret
     # Else, something went wrong
     else:
@@ -131,7 +136,7 @@ def encrypt(txt, pwd):
 
 ##########################################################################################################
 
-def decrypt(txt,pwd):
+def decrypt(txt, pwd, new_filename):
     # The symbols must all be hexadecimal and the text must have a length of ENC_LIST_LEN
     if not all(c in HEX_SYMB for c in txt) or len(txt) != ENC_LIST_LEN : return -1
 
@@ -181,31 +186,33 @@ def decrypt(txt,pwd):
         toret += txt[txt_indexes[x]]
     toret = h2t(dec(toret, encryption_code))
 
+    if new_filename:
+        open(f"{OUTPUT_FOLDER}/{new_filename}.txt", "w").write(toret)
     return toret
 
 ##########################################################################################################
-def encrypt_toimg(txt, pwd, img_path="img.png"):
-    enc_text = encrypt(txt, pwd)
+def save_img(enc_text, img_filename="img"):
     img_arr = np.array([[int(enc_text[i:i+2], 16), int(enc_text[i+2:i+4], 16), int(enc_text[i+4:i+6], 16)] for i in range(0, len(enc_text), 6)], dtype=np.uint8)
     img_arr = img_arr.reshape(IMG_SIZE, IMG_SIZE, 3)
-    Image.fromarray(img_arr).save(img_path)
+    Image.fromarray(img_arr).save(f"{OUTPUT_FOLDER}/{img_filename}.png")
     return enc_text
 
-def decrypt_img(img_path, pwd):
-    img_arr = np.array(Image.open(img_path)).flatten()
+def decrypt_img(img_filename, pwd, new_filename):
+    img_arr = np.array(Image.open(f"{INPUT_FOLDER}/{img_filename}.png")).flatten()
     img_str = "".join([f'{n:02x}' for n in img_arr])
-    return decrypt(img_str, pwd)
+    return decrypt(img_str, pwd, new_filename)
 
 ##########################################################################################################
 def menu():
+    if not os.path.exists(INPUT_FOLDER): os.makedirs(INPUT_FOLDER)
+    if not os.path.exists(OUTPUT_FOLDER): os.makedirs(OUTPUT_FOLDER)
     print("\nThis algorithm helps you encrypt a text with a maximum length of " + str(ENC_LIST_LEN) + ", written with 40 different characters and symbols")
 
     while True:
         print("  0. EXIT: ")
         print("  1. Encrypt a text")
         print("  2. Decrypt a text")
-        print("  3. Encrypt a text into an image")
-        print("  4. Decrypt an image")
+        print("  3. Decrypt an image")
         print("  s. Symbols list")
         opt = input("\nType an option: ")
 
@@ -215,39 +222,40 @@ def menu():
         elif opt == "1":
             txt = input("Text to encrypt: ")
             pwd = input("Password: ")
-            enc_txt = encrypt(txt,pwd)
-            if enc_txt != -1:
-                print(f"\nEncrypted text: {Fore.GREEN}{enc_txt}\n")
+            new_filename = input("Name of the new file: ")
+            save_img_q = input("Save an encrypted image? (y/n): ")
+            if save_img_q == "y":
+                img_filename = input("Name of the image file: ")
+                img_filename = img_filename if img_filename != "" else "img"
+
+            enc_text = encrypt(txt, pwd, new_filename)
+            if save_img_q == "y":
+                save_img(enc_text, img_filename)
+                
+            if enc_text != -1:
+                print(f"\n{Fore.GREEN}Text encrypted succesfully\n")
+                if save_img_q == "y": 
+                    print(f"{Fore.MAGENTA}Image saved\n")
             else:
                 print("\n"+Fore.RED+"Invalid text"+"\n")
 
         elif opt == "2":
             txt = input("Text to decrypt: ")
             pwd = input("Password: ")
-            dec_txt = decrypt(txt,pwd)
+            new_filename = input("Name of the new file: ")
+            dec_txt = decrypt(txt, pwd, new_filename)
             if dec_txt != -1:
-                print(f"\nDecrypted text: {Fore.LIGHTCYAN_EX}{dec_txt}\n")
+                print(f"\n{Fore.GREEN}Text decrypted succesfully\n")
             else:
                 print(f"\n{Fore.RED} Invalid text\n")
 
         elif opt == "3":
-            txt = input("Text to encrypt: ")
+            img_filename = input("Image filename: ")
             pwd = input("Password: ")
-            img_path = input("Path to the image: ")
-            img_path = img_path if img_path != "" else "img.png"
-            enc_txt = encrypt_toimg(txt,pwd,img_path)
-            if enc_txt != -1:
-                print(f"\nEncrypted text: {Fore.LIGHTCYAN_EX}{enc_txt}\n")
-                print(f"\nImage saved in {Fore.LIGHTMAGENTA_EX}{img_path}\n")
-            else:
-                print(f"\n{Fore.RED} Invalid text\n")
-
-        elif opt == "4":
-            img_path = input("Path to the image to decrypt: ")
-            pwd = input("Password: ")
-            dec_txt = decrypt_img(img_path,pwd)
+            new_filename = input("Name of the new file: ")
+            dec_txt = decrypt_img(img_filename, pwd, new_filename)
             if dec_txt != -1:
-                print(f"\nDecrypted text: {Fore.LIGHTCYAN_EX}{dec_txt}\n")
+                print(f"\n{Fore.GREEN}Text decrypted succesfully\n")
             else:
                 print(f"\n{Fore.RED} Invalid text\n")
 
