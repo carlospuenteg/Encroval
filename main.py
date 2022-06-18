@@ -8,11 +8,12 @@ import numpy as np
 BASE = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
 BASE_LEN = len(BASE)
 HEX_SYMB = "0123456789abcdef"
-ENC_LIST_LEN = 216 # 6^2 * 6
 HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
-TEXT_LEN_POS = [1,2]
+HEX_POS_LEN = 2
+ENC_LIST_LEN = 216 if HEX_POS_LEN == 2 else 600 # 10^2 * 6
+TEXT_LEN_POS = [1,2,3]
 
 ##########################################################################################################
 # Create a new hash from a hash
@@ -61,7 +62,7 @@ def encrypt(txt, pwd):
     txt = txt.lower()
 
     # If, for example, ENC_LIST_LEN = 200, then the text on hexadecimal can have a length of up to 197 (200-3)
-    if not all(c in BASE for c in txt) or len(t2h(txt)) > ENC_LIST_LEN-3 : return -1
+    if not all(c in BASE for c in txt) or len(t2h(txt)) > ENC_LIST_LEN-1-HEX_POS_LEN : return -1
 
     # Encode the password to sha512 and get the hash (length = 128)
     hash = hashlib.sha512(pwd.encode()).hexdigest()
@@ -77,13 +78,14 @@ def encrypt(txt, pwd):
 
     while True:
         # Convert each pair of hex digits from the hash to an integer (but the result has to be below ENC_LIST_LEN)
-        pwd_indexes = [min(int(hash[i : i+2], 16), ENC_LIST_LEN-1) for i in range(0, len(hash), 2)]
+        pwd_indexes = []
+        for i in range(0, len(hash), HEX_POS_LEN):
+            n = int(hash[i : i+HEX_POS_LEN], 16)
+            if n < ENC_LIST_LEN and n not in pwd_indexes:
+                pwd_indexes.append(n)
 
-        # Remove the duplicates from the list
-        pwd_indexes = list(dict.fromkeys(pwd_indexes))
-
-        # If the list has more than the required length (TXT_MAX_LEN + ENC_CODE_POS + TEXT_LEN_POS), break (end the loop)
-        if len(pwd_indexes) == ENC_LIST_LEN: 
+        # If the list has more than the required length, break (end the loop)
+        if len(pwd_indexes) >= ENC_LIST_LEN: 
             break
 
         # If the list doesn't have enough indexes, add other hash to the hash
@@ -111,13 +113,13 @@ def encrypt(txt, pwd):
     txt_enc = enc(t2h(txt), encryption_code)
 
     # Indexes for each character in the encrypted text
-    txt_indexes = pwd_indexes[3:]
+    txt_indexes = pwd_indexes[TEXT_LEN_POS[-1]+1:]
 
-    # Encrypt the length of the text (converted to hexadecimal - in string) and adding a 0 to the left if the length is less than 2 (f -> 0f)
-    txt_len_enc = enc(format(len(txt_enc), 'x').rjust(2,"0"), encryption_code)
+    # Encrypt the length of the text (converted to hexadecimal - in string) and adding a 0 to the left if the length is less than HEX_POS_LEN (f -> 0f)
+    txt_len_enc = enc(format(len(txt_enc), 'x').rjust(HEX_POS_LEN,"0"), encryption_code)
 
     # Save the two indexes where the text length will be saved
-    txt_len_indexes = [pwd_indexes[TEXT_LEN_POS[0]] , pwd_indexes[TEXT_LEN_POS[1]]]
+    txt_len_indexes = [pwd_indexes[TEXT_LEN_POS[i]] for i in range(HEX_POS_LEN)]
 
     # Fill the encrypted text with random characters
     toret = [random.choice(HEX_SYMB) for _ in range(ENC_LIST_LEN)]
@@ -159,14 +161,15 @@ def decrypt(txt,pwd):
     iters += ITERS_TOADD
 
     while True:
-        # Convert each pair of hex digits from the hash to an integer (less than ENC_LIST_LEN)
-        pwd_indexes = [min(int(hash[i : i+2], 16), ENC_LIST_LEN-1) for i in range(0, len(hash), 2)]
+        # Convert each pair of hex digits from the hash to an integer (but the result has to be below ENC_LIST_LEN)
+        pwd_indexes = []
+        for i in range(0, len(hash), HEX_POS_LEN):
+            n = int(hash[i : i+HEX_POS_LEN], 16)
+            if n < ENC_LIST_LEN and n not in pwd_indexes:
+                pwd_indexes.append(n)
 
-        # Remove the duplicates from the list
-        pwd_indexes = list(dict.fromkeys(pwd_indexes))
-
-        # If the list has more than the required length (TXT_MAX_LEN + ENC_CODE_POS + TEXT_LEN_POS), break (end the loop)
-        if len(pwd_indexes) == ENC_LIST_LEN: 
+        # If the list has more than the required length, break (end the loop)
+        if len(pwd_indexes) >= ENC_LIST_LEN: 
             break
 
         # If the list doesn't have enough indexes, add other hash to the hash
@@ -191,13 +194,14 @@ def decrypt(txt,pwd):
         hash = h2h(hash,iters)
 
     # Indexes for each character in the encrypted text
-    txt_indexes = pwd_indexes[3:]
+    txt_indexes = pwd_indexes[TEXT_LEN_POS[-1]+1:]
 
     # Save the two indexes where the text length will be saved
-    txt_len_indexes = [pwd_indexes[TEXT_LEN_POS[0]] , pwd_indexes[TEXT_LEN_POS[1]]]
+    txt_len_indexes = [pwd_indexes[TEXT_LEN_POS[i]] for i in range(HEX_POS_LEN)]
 
     # Get the text length from the text in the txt_len_indexes, decrypt it and convert it to integer
-    txt_len = int(dec(txt[txt_len_indexes[0]]+txt[txt_len_indexes[1]], encryption_code), 16)
+    txt_len = [txt[txt_len_indexes[i]] for i in range(HEX_POS_LEN)]
+    txt_len = int(dec(''.join(txt_len), encryption_code), 16)
 
     toret = ""
     for x in range(txt_len):
