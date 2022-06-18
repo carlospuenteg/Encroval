@@ -11,8 +11,8 @@ HEX_SYMB = "0123456789abcdef"
 HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
-HEX_POS_LEN = 2
-ENC_LIST_LEN = 216 if HEX_POS_LEN == 2 else 600 # 10^2 * 6
+HEX_POS_LEN = 3
+ENC_LIST_LEN = (6**2)*6 if HEX_POS_LEN == 2 else (26**2)*6
 TEXT_LEN_POS = [1,2,3]
 
 ##########################################################################################################
@@ -70,29 +70,21 @@ def encrypt(txt, pwd):
     # Initial number of iterations for the hash
     iters = HASH_ITERS
 
-    # Combine 3 consecutive hashes, created from the initial hash
+    # Create a new hash from the old hash
     hash = h2h(hash, iters)
     
     # Add ITERS_TOADD to the iterations count
     iters += ITERS_TOADD
 
-    while True:
-        # Convert each pair of hex digits from the hash to an integer (but the result has to be below ENC_LIST_LEN)
-        pwd_indexes = []
+    pwd_indexes = []
+    while len(pwd_indexes) < ENC_LIST_LEN:
         for i in range(0, len(hash), HEX_POS_LEN):
             n = int(hash[i : i+HEX_POS_LEN], 16)
             if n < ENC_LIST_LEN and n not in pwd_indexes:
                 pwd_indexes.append(n)
-
-        # If the list has more than the required length, break (end the loop)
-        if len(pwd_indexes) >= ENC_LIST_LEN: 
-            break
-
-        # If the list doesn't have enough indexes, add other hash to the hash
-        hash += h2h(hash, iters)
-
-        # Increase the iterations count by ITERS_TOADD
         iters += ITERS_TOADD
+        hash = h2h(hash, iters)
+        print(len(pwd_indexes))
 
     # Create a new hash to use to obtain the symbols used in the encryption and their order
     hash = h2h(hash, iters)
@@ -154,29 +146,20 @@ def decrypt(txt,pwd):
     # Initial number of iterations for the hash
     iters = HASH_ITERS
 
-    # Combine 3 consecutive hashes, created from the initial hash
+    # Create a new hash from the old hash
     hash = h2h(hash, iters)
     
     # Add ITERS_TOADD to the iterations count
     iters += ITERS_TOADD
 
-    while True:
-        # Convert each pair of hex digits from the hash to an integer (but the result has to be below ENC_LIST_LEN)
-        pwd_indexes = []
+    pwd_indexes = []
+    while len(pwd_indexes) < ENC_LIST_LEN:
         for i in range(0, len(hash), HEX_POS_LEN):
             n = int(hash[i : i+HEX_POS_LEN], 16)
             if n < ENC_LIST_LEN and n not in pwd_indexes:
                 pwd_indexes.append(n)
-
-        # If the list has more than the required length, break (end the loop)
-        if len(pwd_indexes) >= ENC_LIST_LEN: 
-            break
-
-        # If the list doesn't have enough indexes, add other hash to the hash
-        hash += h2h(hash, iters)
-
-        # Increase the iterations count by ITERS_TOADD
         iters += ITERS_TOADD
+        hash = h2h(hash, iters)
 
     # Create a new hash to use to obtain the symbols used in the encryption and their order
     hash = h2h(hash, iters)
