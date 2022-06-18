@@ -122,8 +122,7 @@ def encrypt_file(txt_filename, pwd, new_filename="text-enc"):
     return encrypt(txt, pwd, new_filename)
 
 ##########################################################################################################
-def decrypt_file(txt_filename, pwd, new_filename=None):
-    txt = open(f"{INPUT_FOLDER}/{txt_filename}.txt", "r").read()
+def decrypt(txt, pwd, new_filename=None):
     # The symbols must all be hexadecimal and the text must have a length of ENC_LIST_LEN
     if not all(c in HEX_SYMB for c in txt) or len(txt) != ENC_LIST_LEN : return -1
 
@@ -177,6 +176,10 @@ def decrypt_file(txt_filename, pwd, new_filename=None):
         open(f"{OUTPUT_FOLDER}/{new_filename}.txt", "w").write(toret)
     return toret
 
+def decrypt_file(txt_filename, pwd, new_filename=None):
+    txt = open(f"{INPUT_FOLDER}/{txt_filename}.txt", "r").read()
+    return decrypt(txt, pwd, new_filename)
+
 ##########################################################################################################
 def save_enc_img(enc_text, img_filename="img"):
     img_arr = np.array([[int(enc_text[i:i+2], 16), int(enc_text[i+2:i+4], 16), int(enc_text[i+4:i+6], 16)] for i in range(0, len(enc_text), 6)], dtype=np.uint8)
@@ -187,7 +190,7 @@ def save_enc_img(enc_text, img_filename="img"):
 def decrypt_img_txt(img_filename, pwd, new_filename):
     img_arr = np.array(Image.open(f"{INPUT_FOLDER}/{img_filename}.png")).flatten()
     img_str = "".join([f'{n:02x}' for n in img_arr])
-    return decrypt_file(img_str, pwd, new_filename)
+    return decrypt(img_str, pwd, new_filename)
 
 ##########################################################################################################
 def encrypt_img(img_file, pwd, new_filename):
@@ -259,7 +262,7 @@ def menu():
                     print(f"{Fore.RED}File not found")
             pwd = input("Password: ")
             new_filename = input("Name of the new file: ")
-            dec_txt = decrypt_img_txt(img_filename, pwd, img_filename)
+            dec_txt = decrypt_img_txt(img_filename, pwd, new_filename)
             if dec_txt != -1:
                 print(f"\n{Fore.GREEN}Text decrypted succesfully\n")
             else:
