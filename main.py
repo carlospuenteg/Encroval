@@ -12,7 +12,7 @@ HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
 
-HEX_POS_LEN = 2
+HEX_POS_LEN = 6
 IMG_SIZE = int(np.sqrt((16**HEX_POS_LEN)//6))
 ENC_LIST_LEN = (IMG_SIZE**2)*6
 TXT_MAX_LEN = ENC_LIST_LEN//2-1-HEX_POS_LEN
@@ -50,7 +50,7 @@ def h2t(hex):
     return bytes.fromhex(hex).decode('utf-8')
 
 ##########################################################################################################
-def encrypt(txt, pwd, new_filename="text-enc"):
+def encrypt(txt, pwd, new_filename=None):
     # If, for example, ENC_LIST_LEN = 200, then the text on hexadecimal can have a length of up to 197 (200-3)
     
     if len(txt) > TXT_MAX_LEN or len(txt) == 0: 
@@ -114,7 +114,8 @@ def encrypt(txt, pwd, new_filename="text-enc"):
     toret = "".join(toret)
 
     # If the text can be decrypted with the same password, return the result.
-    open(f"{OUTPUT_FOLDER}/{new_filename}.txt", "w").write(toret)
+    if new_filename:
+        open(f"{OUTPUT_FOLDER}/{new_filename}.txt", "w").write(toret)
     return toret
 
 def encrypt_file(txt_filename, pwd, new_filename="text-enc"):
@@ -181,7 +182,7 @@ def decrypt_file(txt_filename, pwd, new_filename=None):
     return decrypt(txt, pwd, new_filename)
 
 ##########################################################################################################
-def save_enc_img(enc_text, img_filename="img"):
+def save_hex_img(enc_text, img_filename="img"):
     img_arr = np.array([[int(enc_text[i:i+2], 16), int(enc_text[i+2:i+4], 16), int(enc_text[i+4:i+6], 16)] for i in range(0, len(enc_text), 6)], dtype=np.uint8)
     img_arr = img_arr.reshape(IMG_SIZE, IMG_SIZE, 3)
     Image.fromarray(img_arr).save(f"{OUTPUT_FOLDER}/{img_filename}.png")
@@ -191,13 +192,6 @@ def decrypt_img_txt(img_filename, pwd, new_filename):
     img_arr = np.array(Image.open(f"{INPUT_FOLDER}/{img_filename}.png")).flatten()
     img_str = "".join([f'{n:02x}' for n in img_arr])
     return decrypt(img_str, pwd, new_filename)
-
-##########################################################################################################
-def encrypt_img(img_file, pwd, new_filename):
-    img_arr = np.array(Image.open(f"{INPUT_FOLDER}/{img_file}")).flatten()
-    hex_img = ''.join([f'{n:02x}' for n in img_arr])
-    enc_hex_img = encrypt(hex_img, pwd)
-    save_enc_img(enc_hex_img, new_filename)
 
 ##########################################################################################################
 def menu():
@@ -224,8 +218,8 @@ def menu():
                     print(f"{Fore.RED}File not found")
             pwd = input("Password: ")
             new_filename = input("Name of the new file: ")
-            save_enc_img_q = input("Save an encrypted image? (y/n): ")
-            if save_enc_img_q == "y":
+            save_hex_img_q = input("Save an encrypted image? (y/n): ")
+            if save_hex_img_q == "y":
                 img_filename = input("Name of the image file: ")
                 img_filename = img_filename if img_filename != "" else "img"
 
@@ -234,10 +228,10 @@ def menu():
             if enc_text == -1:
                 print(f"\n{Fore.RED}Text length is invalid\n")
             else:
-                if save_enc_img_q == "y":
-                    save_enc_img(enc_text, img_filename)
+                if save_hex_img_q == "y":
+                    save_hex_img(enc_text, img_filename)
                 print(f"\n{Fore.GREEN}Text encrypted succesfully\n")
-                if save_enc_img_q == "y": 
+                if save_hex_img_q == "y": 
                     print(f"{Fore.MAGENTA}Image saved\n")
                 
         elif opt == "2":
@@ -270,4 +264,3 @@ def menu():
 
 ##################################################################################################################################
 menu()
-# encrypt_img("tiger.jpg", "pwd", "img")
