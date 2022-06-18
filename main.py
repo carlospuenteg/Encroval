@@ -3,6 +3,7 @@ import hashlib
 from colorama import init, Fore, Back; init(autoreset=True)
 from PIL import Image
 import numpy as np
+import random
 
 ############################################################################
 BASE = "0123456789abcdefghijklmnopqrstuvwxyz .,'"; 
@@ -11,10 +12,10 @@ HEX_SYMB = "0123456789abcdef"
 HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
-HEX_POS_LEN = 3
-ENC_LIST_LEN = (6**2)*6 if HEX_POS_LEN == 2 else (26**2)*6
-TEXT_LEN_POS = [1,2,3]
-
+HEX_POS_LEN = 6
+IMG_SIZE = int(np.sqrt((16**HEX_POS_LEN)//6))
+ENC_LIST_LEN = (IMG_SIZE**2)*6
+TEXT_LEN_POS = range(1, HEX_POS_LEN+1)
 ##########################################################################################################
 # Create a new hash from a hash
 def h2h(hash, iters):
@@ -76,15 +77,9 @@ def encrypt(txt, pwd):
     # Add ITERS_TOADD to the iterations count
     iters += ITERS_TOADD
 
-    pwd_indexes = []
-    while len(pwd_indexes) < ENC_LIST_LEN:
-        for i in range(0, len(hash), HEX_POS_LEN):
-            n = int(hash[i : i+HEX_POS_LEN], 16)
-            if n < ENC_LIST_LEN and n not in pwd_indexes:
-                pwd_indexes.append(n)
-        iters += ITERS_TOADD
-        hash = h2h(hash, iters)
-        print(len(pwd_indexes))
+    # Create a list with the indexes where the symbols will be saved, created in random order using the hash as the random seed
+    random.seed(int(hash,16))
+    pwd_indexes = random.sample(range(ENC_LIST_LEN), ENC_LIST_LEN)
 
     # Create a new hash to use to obtain the symbols used in the encryption and their order
     hash = h2h(hash, iters)
@@ -152,14 +147,9 @@ def decrypt(txt,pwd):
     # Add ITERS_TOADD to the iterations count
     iters += ITERS_TOADD
 
-    pwd_indexes = []
-    while len(pwd_indexes) < ENC_LIST_LEN:
-        for i in range(0, len(hash), HEX_POS_LEN):
-            n = int(hash[i : i+HEX_POS_LEN], 16)
-            if n < ENC_LIST_LEN and n not in pwd_indexes:
-                pwd_indexes.append(n)
-        iters += ITERS_TOADD
-        hash = h2h(hash, iters)
+    # Create a list with the indexes where the symbols will be saved, created in random order using the hash as the random seed
+    random.seed(int(hash,16))
+    pwd_indexes = random.sample(range(ENC_LIST_LEN), ENC_LIST_LEN)
 
     # Create a new hash to use to obtain the symbols used in the encryption and their order
     hash = h2h(hash, iters)
@@ -197,8 +187,7 @@ def decrypt(txt,pwd):
 def encrypt_toimg(txt, pwd, img_path="img.png"):
     enc_text = encrypt(txt, pwd)
     img_arr = np.array([[int(enc_text[i:i+2], 16), int(enc_text[i+2:i+4], 16), int(enc_text[i+4:i+6], 16)] for i in range(0, len(enc_text), 6)], dtype=np.uint8)
-    size = int(np.sqrt(ENC_LIST_LEN/6))
-    img_arr = img_arr.reshape(size, size, 3)
+    img_arr = img_arr.reshape(IMG_SIZE, IMG_SIZE, 3)
     Image.fromarray(img_arr).save(img_path)
     return enc_text
 
