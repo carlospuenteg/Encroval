@@ -7,15 +7,16 @@ import random
 import os
 
 ############################################################################
-BASE_TXT = "0123456789abcdefghijklmnopqrstuvwxyz .,;'\n"; 
-BASE_TXT_LEN = len(BASE_TXT)
 HEX_SYMB = "0123456789abcdef"
 HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
-HEX_POS_LEN = 6
+
+HEX_POS_LEN = 2
 IMG_SIZE = int(np.sqrt((16**HEX_POS_LEN)//6))
 ENC_LIST_LEN = (IMG_SIZE**2)*6
+TXT_MAX_LEN = ENC_LIST_LEN//2-1-HEX_POS_LEN
+
 TEXT_LEN_POS = range(1, HEX_POS_LEN+1)
 INPUT_FOLDER = "input"
 OUTPUT_FOLDER = "output"
@@ -44,28 +45,16 @@ def dec(txt,encryption):
 def t2h(txt):
     return txt.encode('utf-8').hex()
 
-# Convert hexadecimal to text
+# Convert hexadecimal to utf-8
 def h2t(hex):
-    num = 0
-    for x in range(0,len(hex)):
-        num += ( HEX_SYMB.index(hex[x]) * 16**(len(hex)-x-1) )
-
-    d = []
-    while num:
-        d.append(BASE_TXT[num % BASE_TXT_LEN])
-        num //= BASE_TXT_LEN
-
-    return "".join(d[::-1])
+    return bytes.fromhex(hex).decode('utf-8')
 
 ##########################################################################################################
 def encrypt(txt, pwd, new_filename="text-enc"):
     # If, for example, ENC_LIST_LEN = 200, then the text on hexadecimal can have a length of up to 197 (200-3)
-    if not all(c in BASE_TXT for c in txt):
-        return -1
     
-    test_hex = t2h(txt)
-    if len(test_hex) > ENC_LIST_LEN-1-HEX_POS_LEN or len(test_hex) == 0: 
-        return -2
+    if len(txt) > TXT_MAX_LEN or len(txt) == 0: 
+        return -1
 
     # Encode the password to sha512 and get the hash (length = 128)
     hash = hashlib.sha512(pwd.encode()).hexdigest()
@@ -129,7 +118,7 @@ def encrypt(txt, pwd, new_filename="text-enc"):
     return toret
 
 def encrypt_file(txt_filename, pwd, new_filename="text-enc"):
-    txt = open(f"{INPUT_FOLDER}/{txt_filename}.txt", "r").read().lower()
+    txt = open(f"{INPUT_FOLDER}/{txt_filename}.txt", "r").read()
     return encrypt(txt, pwd, new_filename)
 
 ##########################################################################################################
@@ -212,12 +201,13 @@ def menu():
     if not os.path.exists(INPUT_FOLDER): os.makedirs(INPUT_FOLDER)
     if not os.path.exists(OUTPUT_FOLDER): os.makedirs(OUTPUT_FOLDER)
 
+    print(f"\nThis algorithm helps you encrypt a text with a maximum length of {TXT_MAX_LEN:,} characters, written with utf-8 encoding.\n")
+
     while True:
         print("  0. EXIT: ")
         print("  1. Encrypt a text")
         print("  2. Decrypt a text")
         print("  3. Decrypt an image")
-        print("  s. Symbols list")
         opt = input("\nType an option: ")
 
         if opt == "0":
@@ -239,8 +229,6 @@ def menu():
             enc_text = encrypt_file(txt_filename, pwd, new_filename)
                 
             if enc_text == -1:
-                print(f"\n{Fore.RED}Text contains invalid characters\n")
-            elif enc_text == -2:
                 print(f"\n{Fore.RED}Text length is invalid\n")
             else:
                 if save_enc_img_q == "y":
@@ -250,7 +238,11 @@ def menu():
                     print(f"{Fore.MAGENTA}Image saved\n")
                 
         elif opt == "2":
-            txt_filename = input("Filename of text to decrypt: ")
+            txt_filename = None
+            while not txt_filename or not os.path.exists(f"{INPUT_FOLDER}/{txt_filename}.txt"):
+                txt_filename = input("Filename of the text to decrypt: ")
+                if not os.path.exists(f"{INPUT_FOLDER}/{txt_filename}.txt"):
+                    print(f"{Fore.RED}File not found")
             pwd = input("Password: ")
             new_filename = input("Name of the new file: ")
             dec_txt = decrypt_file(txt_filename, pwd, new_filename)
@@ -260,24 +252,19 @@ def menu():
                 print(f"\n{Fore.RED} Invalid text\n")
 
         elif opt == "3":
-            img_filename = input("Image filename: ")
+            img_filename = None
+            while not img_filename or not os.path.exists(f"{INPUT_FOLDER}/{img_filename}.png"):
+                img_filename = input("Image filename: ")
+                if not os.path.exists(f"{INPUT_FOLDER}/{img_filename}.png"):
+                    print(f"{Fore.RED}File not found")
             pwd = input("Password: ")
             new_filename = input("Name of the new file: ")
-            dec_txt = decrypt_img_txt(img_filename, pwd, new_filename)
+            dec_txt = decrypt_img_txt(img_filename, pwd, img_filename)
             if dec_txt != -1:
                 print(f"\n{Fore.GREEN}Text decrypted succesfully\n")
             else:
-                print(f"\n{Fore.RED} Invalid text\n")
-
-        elif opt == "s":
-            baseList = ""
-            for x in BASE_TXT:
-                baseList += Back.BLUE+" "+x+" "
-                baseList += Back.RESET+" "
-            print("\n"+baseList+"\n")
+                print(f"\n{Fore.RED}Invalid text\n")
 
 ##################################################################################################################################
-t = "123456789"
-print(len(t2h(t)))
 menu()
 # encrypt_img("tiger.jpg", "pwd", "img")
