@@ -1,6 +1,6 @@
 # Encroval
 
-## Description
+## Description
 
 Encroval is an encryption tool that allows you to encrypt and decrypt files using a password.
 
