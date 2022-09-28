@@ -1,6 +1,40 @@
 # Encroval
 
+## Description
+
+Encroval is an encryption tool that allows you to encrypt and decrypt files using a password.
+
+It can encrypt a text of any length with a password and the only way to decrypt it is by knowing it.
+
+The password can be up to 2<sup>128</sup> bits long and accepts any UTF-8 character (1,112,064 different characters).
+
+
+## Config
+
+In `config.py` you can change `HEX_POS_LEN`, which is **the length that the positions in the encryption will have (in hex)**
+| HEX_POS_LEN | Hex positions range | Max length of the text to encrypt |
+|-|-|-|
+| 1 | 0x0 - 0xF | 1 |
+| 2 | 0x00 - 0xFF | 105 |
+| 3 | 0x000 - 0xFFF | 2,024 |
+| 4 | 0x0000 - 0xFFFF | 32,443 |
+| 5 | 0x00000 - 0xFFFFF | 524,166 |
+| 6 | 0x000000 - 0xFFFFFF | 8,386,745 |
+| 7 | 0x0000000 - 0xFFFFFFF | 134,188,024 |
+| 8 | 0x00000000 - 0xFFFFFFFF | 2,147,329,539 |
+
+`HEX_POS_LEN` affects the maximum length of the message that can be encrypted.
+
+But the max length of the text isn't equal to the number of bits that a position has, because some bits are used to store other things
+
 ## Encrypt a text
+
+| Input | Description |
+|-|-|
+| Text path | Path of the text file to encrypt (within the `input` folder) |
+| Password | Password to encrypt the text |
+| New filename | Name that the encrypted text will have (within the `output` folder) |
+| Image filename | Name that the encrypted image will have (within the `output` folder) |
 
 |||
 |-|-|

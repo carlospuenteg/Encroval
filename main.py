@@ -1,10 +1,11 @@
 import random
 import hashlib
-from colorama import init, Fore, Back; init(autoreset=True)
+from colorama import init, Fore; init(autoreset=True)
 from PIL import Image
 import numpy as np
 import random
 import os
+from config import *
 
 ############################################################################
 HEX_SYMB = "0123456789abcdef"
@@ -12,12 +13,11 @@ HASH_ITERS = 100
 ITERS_TOADD = 10
 ENC_CODE_POS = 0
 
-HEX_POS_LEN = 6
 IMG_SIZE = int(np.sqrt((16**HEX_POS_LEN)//6))
 ENC_LIST_LEN = (IMG_SIZE**2)*6
 TXT_MAX_LEN = ENC_LIST_LEN//2-1-HEX_POS_LEN
-
 TEXT_LEN_POS = range(1, HEX_POS_LEN+1)
+
 INPUT_FOLDER = "input"
 OUTPUT_FOLDER = "output"
 ##########################################################################################################
@@ -118,8 +118,8 @@ def encrypt(txt, pwd, new_filename=None):
         open(f"{OUTPUT_FOLDER}/{new_filename}.txt", "w").write(toret)
     return toret
 
-def encrypt_file(txt_filename, pwd, new_filename="text-enc"):
-    txt = open(f"{INPUT_FOLDER}/{txt_filename}.txt", "r").read()
+def encrypt_file(txt_path, pwd, new_filename="text-enc"):
+    txt = open(f"{INPUT_FOLDER}/{txt_path}", "r").read()
     return encrypt(txt, pwd, new_filename)
 
 ##########################################################################################################
@@ -178,7 +178,7 @@ def decrypt(txt, pwd, new_filename=None):
     return toret
 
 def decrypt_file(txt_filename, pwd, new_filename=None):
-    txt = open(f"{INPUT_FOLDER}/{txt_filename}.txt", "r").read()
+    txt = open(f"{INPUT_FOLDER}/{txt_filename}", "r").read()
     return decrypt(txt, pwd, new_filename)
 
 ##########################################################################################################
@@ -188,19 +188,27 @@ def save_hex_img(enc_text, img_filename="img"):
     Image.fromarray(img_arr).save(f"{OUTPUT_FOLDER}/{img_filename}.png")
     return enc_text
 
-def decrypt_img_txt(img_filename, pwd, new_filename):
-    img_arr = np.array(Image.open(f"{INPUT_FOLDER}/{img_filename}.png")).flatten()
+def decrypt_img_txt(img_path, pwd, new_filename):
+    img_arr = np.array(Image.open(f"{INPUT_FOLDER}/{img_path}")).flatten()
     img_str = "".join([f'{n:02x}' for n in img_arr])
     return decrypt(img_str, pwd, new_filename)
+
+##########################################################################################################
+
+def get_path(msg="Path: ", ext="txt"):
+    while True:
+        path = input(msg)
+        path = path if "." in path else f"{path}.{ext}"
+        if os.path.exists(f"{INPUT_FOLDER}/{path}"): return path
+        print(f"{Fore.RED}File not found")
 
 ##########################################################################################################
 def menu():
     if not os.path.exists(INPUT_FOLDER): os.makedirs(INPUT_FOLDER)
     if not os.path.exists(OUTPUT_FOLDER): os.makedirs(OUTPUT_FOLDER)
 
-    print(f"\nThis algorithm helps you encrypt a text with a maximum length of {TXT_MAX_LEN:,} characters, written with utf-8 encoding.\n")
-
     while True:
+        print(f"{Fore.CYAN}Max length of the text{Fore.RESET}: {Fore.GREEN}{TXT_MAX_LEN:,}{Fore.RESET} (you can change it in {Fore.LIGHTYELLOW_EX}config.py{Fore.RESET})")
         print("  0. EXIT: ")
         print("  1. Encrypt a text")
         print("  2. Decrypt a text")
@@ -210,20 +218,18 @@ def menu():
         if opt == "0":
             return
 
+
         elif opt == "1":
-            txt_filename = None
-            while not txt_filename or not os.path.exists(f"{INPUT_FOLDER}/{txt_filename}.txt"):
-                txt_filename = input("Text filename: ")
-                if not os.path.exists(f"{INPUT_FOLDER}/{txt_filename}.txt"):
-                    print(f"{Fore.RED}File not found")
+            txt_path = get_path("Text path (within input folder): ", "txt")
             pwd = input("Password: ")
             new_filename = input("Name of the new file: ")
+
             save_hex_img_q = input("Save an encrypted image? (y/n): ")
             if save_hex_img_q == "y":
                 img_filename = input("Name of the image file: ")
                 img_filename = img_filename if img_filename != "" else "img"
 
-            enc_text = encrypt_file(txt_filename, pwd, new_filename)
+            enc_text = encrypt_file(txt_path, pwd, new_filename)
                 
             if enc_text == -1:
                 print(f"\n{Fore.RED}Text length is invalid\n")
@@ -234,29 +240,26 @@ def menu():
                 if save_hex_img_q == "y": 
                     print(f"{Fore.MAGENTA}Image saved\n")
                 
+
         elif opt == "2":
-            txt_filename = None
-            while not txt_filename or not os.path.exists(f"{INPUT_FOLDER}/{txt_filename}.txt"):
-                txt_filename = input("Filename of the text to decrypt: ")
-                if not os.path.exists(f"{INPUT_FOLDER}/{txt_filename}.txt"):
-                    print(f"{Fore.RED}File not found")
+            txt_path = get_path("Text path (within input folder): ", "txt")
             pwd = input("Password: ")
             new_filename = input("Name of the new file: ")
-            dec_txt = decrypt_file(txt_filename, pwd, new_filename)
+
+            dec_txt = decrypt_file(txt_path, pwd, new_filename)
+
             if dec_txt != -1:
                 print(f"\n{Fore.GREEN}Text decrypted succesfully\n")
             else:
                 print(f"\n{Fore.RED} Invalid text\n")
 
+
         elif opt == "3":
-            img_filename = None
-            while not img_filename or not os.path.exists(f"{INPUT_FOLDER}/{img_filename}.png"):
-                img_filename = input("Image filename: ")
-                if not os.path.exists(f"{INPUT_FOLDER}/{img_filename}.png"):
-                    print(f"{Fore.RED}File not found")
+            img_path = get_path("Image path (within input folder): ", "png")
             pwd = input("Password: ")
             new_filename = input("Name of the new file: ")
-            dec_txt = decrypt_img_txt(img_filename, pwd, new_filename)
+            dec_txt = decrypt_img_txt(img_path, pwd, new_filename)
+
             if dec_txt != -1:
                 print(f"\n{Fore.GREEN}Text decrypted succesfully\n")
             else:
