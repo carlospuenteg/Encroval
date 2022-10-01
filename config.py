@@ -1,4 +1,4 @@
-POS_LEN = 4
+POS_LEN = 2
 """
 The length that the positions in the encryption will have (in hex)
 
