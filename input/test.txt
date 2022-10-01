@@ -1,3 +1,0 @@
-This is a test 123!!!
-
-It can be several lines long and have every UTF-8 character! ✔️ ❤️ ☆
