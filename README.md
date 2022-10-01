@@ -1,78 +1,150 @@
 # Encroval
 
+## Index
+* [Description](#description)
+* [Get Started](#get-started)
+  * [Install requirements](#install-requirements)
+  * [Enter the input](#enter-the-input)
+  * [Run](#run)
+* [Configuration](#configuration)
+* [Examples](#examples)
+  * [Encryption](#encryption-example)
+  * [Text Decryption](#text-decryption-example)
+  * [Image Decryption](#image-decryption-example)
+
 ## Description
 
-Encroval is an encryption tool that allows you to encrypt and decrypt files using a password.
+Encroval is an encryption tool that allows you to encrypt a text into other text or image using a password.
 
-It can encrypt a text of any length with a password and the only way to decrypt it is by knowing it.
-
-The password can be up to 2<sup>128</sup> bits long and accepts any UTF-8 character (1,112,064 different characters).
+It can encrypt a text of any length and the password can be up to 2<sup>128</sup> bits long and accepts any UTF-8 character (1,112,064 different characters).
 
 
-## Config
 
-In `config.py` you can change `HEX_POS_LEN`, which is **the length that the positions in the encryption will have (in hex)**
-| HEX_POS_LEN | Hex positions range | Max length of the text to encrypt |
-|-|-|-|
-| 1 | 0x0 - 0xF | 1 |
-| 2 | 0x00 - 0xFF | 105 |
-| 3 | 0x000 - 0xFFF | 2,024 |
-| 4 | 0x0000 - 0xFFFF | 32,443 |
-| 5 | 0x00000 - 0xFFFFF | 524,166 |
-| 6 | 0x000000 - 0xFFFFFF | 8,386,745 |
-| 7 | 0x0000000 - 0xFFFFFFF | 134,188,024 |
-| 8 | 0x00000000 - 0xFFFFFFFF | 2,147,329,539 |
 
-`HEX_POS_LEN` affects the maximum length of the message that can be encrypted.
+## Get Started
 
-But the max length of the text isn't equal to the number of bits that a position has, because some bits are used to store other things
+#### Install Requirements
 
-## Encrypt a text
+```bash
+pip3 install -r requirements.txt
+```
 
-| Input | Description |
+
+#### Enter the input
+
+##### Select the text to encrypt
+Place the text you want to encrypt (a `.txt` file) in the `input` folder.
+
+##### Select the text/image to decrypt
+Place the text you want to encrypt (a `.txt` file) or the image (a `.png` file) in the `input` folder.
+
+
+#### Run
+
+```bash
+python3 main.py
+```
+
+
+
+
+## Configuration
+
+You can change the `POS_LEN` in the `config.py` file, which changes the input text's maximum length.
+
+Default is `POS_LEN = 4`, so the maximum length the text can have by default is **32,446**
+
+The more the `POS_LEN` is, the longer the text can be, but the longer it will take to encrypt and decrypt it.
+
+| POS_LEN | Max text lenght |
 |-|-|
-| Text path | Path of the text file to encrypt (within the `input` folder) |
-| Password | Password to encrypt the text |
-| New filename | Name that the encrypted text will have (within the `output` folder) |
-| Image filename | Name that the encrypted image will have (within the `output` folder) |
-
-|||
-|-|-|
-| Text to encrypt | hello world
-| Password | test#@–{}password123¿?
-| Encrypted text |    70c15441e9d300393879a961b87440e60dfe8bbdcca9160fd52a68b45993eac8414365c952c405e2609d4dc9556b9f192d261d8069c121e0db458fd15bdd2ba0a263d5e5bfa9e202dd4827c655236f6e9a5ee69dcb52dc93d0202c4bd4ba3e394feb61919fa7993ac49ae6a88b26255a772483bb06f0624311eafd7b2ec8cc38d5f9f8ee56894a2c0994208647f67596a434f3
-
-If you run it again, you will create a different encrypted text:
-|||
-|-|-|
-| Text to encrypt | hello world
-| Password | test#@–{}password123¿?
-| Encrypted text |    d00b2b23f9b1cc8e7faf0d0148614eafcdc4a68c16992e1d47c90c88d7380408e5b5b3c6be86b5f1e9236c9055abb1532cceebc169b3966dfbbcb7e19b7857703d1914138f5c81bb4d57acbd9c7963b942e3e3facb2d8c07cf86e276dae5ad3ff3787a37052253befbabc77e6983d2a8c731377652e90f0efc8e2e0e9efb35c565e2367cb2b64a47283dda3c5ebcf722cf5afe
-
-## Encrypt a text into an image
-
-<img src=readme-assets/img-res.jpg width=200>
+| 1 | 2 |
+| 2 | 107 |
+| 3 | 2,026 |
+| 4 | 32,446 |
+| 5 | 524,169 |
+| 6 | 8,386,749 |
+| 7 | 134,188,028 |
+| 8 | 2,147,329,544 |
+| ... | ... |
 
 
-## Decrypt a text
-
-|||
-|-|-|
-| Text to decrypt | 70c15441e9d300393879a961b87440e60dfe8bbdcca9160fd52a68b45993eac8414365c952c405e2609d4dc9556b9f192d261d8069c121e0db458fd15bdd2ba0a263d5e5bfa9e202dd4827c655236f6e9a5ee69dcb52dc93d0202c4bd4ba3e394feb61919fa7993ac49ae6a88b26255a772483bb06f0624311eafd7b2ec8cc38d5f9f8ee56894a2c0994208647f67596a434f3
-| Password | test#@–{}password123¿?
-| Decrypted text | hello world
-
-|||
-|-|-|
-| Text to decrypt | d00b2b23f9b1cc8e7faf0d0148614eafcdc4a68c16992e1d47c90c88d7380408e5b5b3c6be86b5f1e9236c9055abb1532cceebc169b3966dfbbcb7e19b7857703d1914138f5c81bb4d57acbd9c7963b942e3e3facb2d8c07cf86e276dae5ad3ff3787a37052253befbabc77e6983d2a8c731377652e90f0efc8e2e0e9efb35c565e2367cb2b64a47283dda3c5ebcf722cf5afe
-| Password | test#@–{}password123¿?
-| Decrypted text | hello world
 
 
-## Decrypt an image
+## Examples
 
-|||
-|-|-|
-| Image path | img.png
-| Password | test#@–{}password123¿?
-| Decrypted text | hello world
+### Encryption example
+
+<img width=400 src=readme-assets/example_encryption.png>
+
+##### `config.py`
+
+```python
+POS_LEN = 2
+```
+
+##### Input text (`input/test.txt`)
+```txt
+This is a test 123!!!
+
+It can have every UTF-8 character! ✔️ ❤️ ☆
+```
+
+##### Password
+```txt
+test#@–{}password123¿?
+```
+
+##### Encrypted text (`output/encrypted_text.txt`)
+```txt
+3e8b00b4bcbb4ff246fdb3bc9afd63cf080e1cbefdc4b4bb2b5f1400f3fd4e6cb10d40825d0ab41e080e4e751a1ebbb8e7c4448fc14434d5c84d7fb3cc68e2c66033d5cfeece84bd256888b5e3dbb5bdc7fd47845be373e44bc8defbabb92e544f5eb0b4c43403084344d663
+```
+
+##### Encrypted image (`output/encrypted_image.png`)
+<img width=70 src=readme-assets/encrypted_image.png>
+
+
+
+### Text Decryption example
+
+<img width=400 src=readme-assets/example_text_decryption.png>
+
+##### Input text (`input/encrypted_text.txt`)
+```txt
+This is a test 123!!!
+
+It can have every UTF-8 character! ✔️ ❤️ ☆
+```
+
+##### Password
+```txt
+test#@–{}password123¿?
+```
+
+##### Decrypted text (`output/decrypted_text.txt`)
+```txt
+This is a test 123!!!
+
+The text can have every UTF-8 character! ✔️ ❤️ ☆
+```
+
+
+
+### Image Decryption example
+
+<img width=400 src=readme-assets/example_image_decryption.png>
+
+##### Input image (`input/encrypted_image.png`)
+<img width=70 src=readme-assets/encrypted_image.png>
+
+##### Password
+```txt
+test#@–{}password123¿?
+```
+
+##### Decrypted image (`output/decrypted_image.txt`)
+```txt
+This is a test 123!!!
+
+The text can have every UTF-8 character! ✔️ ❤️ ☆
+```
