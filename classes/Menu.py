@@ -1,6 +1,7 @@
 import os
 from colorama import Fore, init; init()
 from PIL import Image
+import time
 
 from .Text import Text
 from .Options import Options
@@ -41,22 +42,26 @@ class Menu():
         enc_text_file = self.get_file("New text filename: ", "txt")
         enc_img_file = self.get_file("New image filename: ", "png") if self.yes_no("Save image? [y/n]: ") else None
 
+        t1 = time.time()
         try:
             encrypted_text = Encryptor(text, pwd).encrypt()
             self.save_text(encrypted_text, enc_text_file)
             print(Text("\nText encrypted succesfully\n", Fore.GREEN))
             if enc_img_file:
                 self.save_img(encrypted_text, enc_img_file)
-                print(Text("Image saved", Fore.MAGENTA))
+                print(Text("Image saved", Fore.GREEN))
         except Exception as e:
             print(Text(f"Error: {e}", Fore.RED))
             return
+
+        print(Text(f"\nDone in {time.time() - t1:.2f} seconds", Fore.LIGHTYELLOW_EX))
 
 
     def decrypt(self, ciphertext:str) -> str:
         pwd = input("Password: ")
         dec_text_file = self.get_file("New filename: ", "txt")
 
+        t1 = time.time()
         try:
             decypted_text = Decryptor(ciphertext, pwd).decrypt()
             self.save_text(decypted_text, dec_text_file)
@@ -64,6 +69,8 @@ class Menu():
         except Exception as e:
             print(Text(f"Error: {e}", Fore.RED))
             return
+
+        print(Text(f"\nDone in {time.time() - t1:.2f} seconds", Fore.LIGHTYELLOW_EX))
 
 
     def decrypt_text(self):

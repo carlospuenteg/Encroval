@@ -38,14 +38,8 @@ def get_textE_len_idxs(seed:int, encryption_len:int, textE_len_digits:int) -> tu
 
 def get_textE_idxs(seed:int, encryption_len:int, textE_len:int, textE_len_idxs:tuple) -> tuple:
     random.seed(seed)
-    textE_idxs = []
-    for _ in range(textE_len):
-        while True:
-            idx = random.randint(0, encryption_len-1)
-            if idx not in textE_idxs and idx not in textE_len_idxs:
-                textE_idxs.append(idx)
-                break
-    return textE_idxs
+
+    return random.sample([x for x in range(encryption_len) if x not in textE_len_idxs], textE_len)
 
 
 # Create a new hash from a hash

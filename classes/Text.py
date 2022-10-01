@@ -1,7 +1,7 @@
 from colorama import Fore, init; init()
 
 class Text:
-    def __init__(self, text:str, color:str):
+    def __init__(self, text:str, color:str=Fore.WHITE):
         self.text = text
         self.color = color
 
