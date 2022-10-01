@@ -23,23 +23,23 @@ It can encrypt a text of any length and the password can be up to 2<sup>128</sup
 
 ## Get Started
 
-#### Install Requirements
+### Install Requirements
 
 ```bash
 pip3 install -r requirements.txt
 ```
 
 
-#### Enter the input
+### Enter the input
 
-##### Select the text to encrypt
+#### Select the text to encrypt
 Place the text you want to encrypt (a `.txt` file) in the `input` folder.
 
-##### Select the text/image to decrypt
+#### Select the text/image to decrypt
 Place the text you want to encrypt (a `.txt` file) or the image (a `.png` file) in the `input` folder.
 
 
-#### Run
+### Run
 
 ```bash
 python3 main.py
@@ -77,30 +77,30 @@ The more the `POS_LEN` is, the longer the text can be, but the longer it will ta
 
 <img width=400 src=readme-assets/example_encryption.png>
 
-##### `config.py`
+#### `config.py`
 
 ```python
 POS_LEN = 2
 ```
 
-##### Input text (`input/test.txt`)
+#### Input text (`input/test.txt`)
 ```txt
 This is a test 123!!!
 
 It can have every UTF-8 character! ✔️ ❤️ ☆
 ```
 
-##### Password
+#### Password
 ```txt
 test#@–{}password123¿?
 ```
 
-##### Encrypted text (`output/encrypted_text.txt`)
+#### Encrypted text (`output/encrypted_text.txt`)
 ```txt
 3e8b00b4bcbb4ff246fdb3bc9afd63cf080e1cbefdc4b4bb2b5f1400f3fd4e6cb10d40825d0ab41e080e4e751a1ebbb8e7c4448fc14434d5c84d7fb3cc68e2c66033d5cfeece84bd256888b5e3dbb5bdc7fd47845be373e44bc8defbabb92e544f5eb0b4c43403084344d663
 ```
 
-##### Encrypted image (`output/encrypted_image.png`)
+#### Encrypted image (`output/encrypted_image.png`)
 <img width=70 src=readme-assets/encrypted_image.png>
 
 
@@ -109,19 +109,19 @@ test#@–{}password123¿?
 
 <img width=400 src=readme-assets/example_text_decryption.png>
 
-##### Input text (`input/encrypted_text.txt`)
+#### Input text (`input/encrypted_text.txt`)
 ```txt
 This is a test 123!!!
 
 It can have every UTF-8 character! ✔️ ❤️ ☆
 ```
 
-##### Password
+#### Password
 ```txt
 test#@–{}password123¿?
 ```
 
-##### Decrypted text (`output/decrypted_text.txt`)
+#### Decrypted text (`output/decrypted_text.txt`)
 ```txt
 This is a test 123!!!
 
@@ -134,15 +134,15 @@ The text can have every UTF-8 character! ✔️ ❤️ ☆
 
 <img width=400 src=readme-assets/example_image_decryption.png>
 
-##### Input image (`input/encrypted_image.png`)
+#### Input image (`input/encrypted_image.png`)
 <img width=70 src=readme-assets/encrypted_image.png>
 
-##### Password
+#### Password
 ```txt
 test#@–{}password123¿?
 ```
 
-##### Decrypted image (`output/decrypted_image.txt`)
+#### Decrypted image (`output/decrypted_image.txt`)
 ```txt
 This is a test 123!!!
 
