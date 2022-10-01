@@ -14,7 +14,6 @@ from constants.constants import *
 class Menu():
     def __init__(self):
         self.create_folders()
-        print(f'\n{Text("Max length of the text",Fore.CYAN)}: {Text(f"{TXT_MAX_LEN:,}",Fore.GREEN)} (you can change it in {Text("config.py",Fore.LIGHTYELLOW_EX)}')
         option = Options(["EXIT", "Encrypt", "Decrypt text", "Decrypt image"]).get_choice()
         
         if option == 0: 
