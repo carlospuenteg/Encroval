@@ -1,8 +1,9 @@
 from colorama import Fore, init; init()
-from .Text import Text
+
+from utils.colortext import colortext
 
 class Options:
-    def __init__(self, options:list, first_idx=0):
+    def __init__(self, options:list, first_idx:int=0):
         self.options = options
         self.first_idx = first_idx
 
@@ -13,7 +14,7 @@ class Options:
 
         if self.check_input(choice): return int(choice)
 
-        print(Text("\nInvalid choice.\n", Fore.RED))
+        print(colortext("\nInvalid choice.\n", Fore.RED))
         return self.get_choice()
 
 

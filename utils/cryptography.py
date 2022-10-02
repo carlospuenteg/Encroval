@@ -1,7 +1,7 @@
 import hashlib
-import sys; sys.path.append("..")
-from constants.constants import *
 import random
+
+from constants.constants import *
 
 def enc(txt, encryption_code:str) -> str:
     encTxt = ""
@@ -11,7 +11,7 @@ def enc(txt, encryption_code:str) -> str:
 
 
 # Decrypt an encrypted text with an encryption code
-def dec(txt, encryption:str) -> str:
+def dec(txt:str, encryption:str) -> str:
     decTxt = ""
     for x in txt:
         decTxt += HEX_SYMB[encryption.index(x)]  # The symbol in the equivalent position
