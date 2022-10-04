@@ -20,7 +20,7 @@ def menu():
         encrypt()
 
     elif option == 2:
-        decrypt_colortext()
+        decrypt_text()
 
     elif option == 3:
         decrypt_image()
@@ -40,7 +40,7 @@ def encrypt():
     t1 = time.time()
     try:
         encrypted_text = encrypt_txt(text, pwd)
-        save_colortext(encrypted_text, enc_text_file)
+        save_text(encrypted_text, enc_text_file)
         print(colortext("\ntext encrypted succesfully\n", Fore.GREEN))
         if enc_img_file:
             save_img(encrypted_text, enc_img_file)
@@ -59,7 +59,7 @@ def decrypt(ciphertext:str) -> str:
     t1 = time.time()
     try:
         decypted_text = decrypt_cipher(ciphertext, pwd)
-        save_colortext(decypted_text, dec_text_file)
+        save_text(decypted_text, dec_text_file)
         print(colortext("\ntext decrypted succesfully\n", Fore.GREEN))
     except Exception as e:
         print(colortext(f"Error: {e}", Fore.RED))
@@ -68,17 +68,17 @@ def decrypt(ciphertext:str) -> str:
     print(colortext(f"\nDone in {time.time() - t1:.2f} seconds", Fore.LIGHTYELLOW_EX))
 
 
-def decrypt_colortext():
+def decrypt_text():
     ciphertext = open(get_input_file("Ciphertext filename: ", "txt")).read()
     decrypt(ciphertext)
 
 
 def decrypt_image():
-    ciphertext = img_to_colortext(get_input_file("Cipher image filename: ", "png"))
+    ciphertext = img_to_text(get_input_file("Cipher image filename: ", "png"))
     decrypt(ciphertext)
 
 
-def img_to_colortext(img_file:str) -> str:
+def img_to_text(img_file:str) -> str:
     img_arr = np.array(Image.open(img_file)).flatten()
     img_str = "".join([f'{n:02x}' for n in img_arr])
     return img_str
@@ -91,7 +91,7 @@ def yes_no(msg:str="Save? [y/n]: ") -> bool:
     else: return yes_no(msg)
 
 
-def save_colortext(text:str, file:str):
+def save_text(text:str, file:str):
     with open(f"{OUTPUT_DIR}/{file}", "w") as f:
         f.write(text)
 
